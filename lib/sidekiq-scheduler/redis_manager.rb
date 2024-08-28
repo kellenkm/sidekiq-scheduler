@@ -130,10 +130,13 @@ module SidekiqScheduler
     def self.register_job_instance(job_name, time)
       job_key = pushed_job_key(job_name)
       registered, _ = Sidekiq.redis do |r|
-        r.multi do |m|
+        _r = r.multi do |m|
           m.zadd(job_key, time.to_i, time.to_i)
           m.expire(job_key, REGISTERED_JOBS_THRESHOLD_IN_SECONDS)
         end
+        puts 'returning r!'
+        puts _r.inspect
+        return _r
       end
 
       registered.instance_of?(Integer) ? (registered > 0) : registered
